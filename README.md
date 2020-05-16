@@ -1,0 +1,2 @@
+# WisdomPets
+Experiments with Django

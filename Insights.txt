@@ -1,0 +1,280 @@
+<!--By Nopphiphat Suraminitkul
+	Through LinkedIn Learning provided by Caleb Smith
+-->
+
+<!--Instruction for Django from the terminal 
+	- Navigate to our desired path where we will create the project
+	- Create our project that will contain various files
+	https://docs.djangoproject.com/en/3.0/
+-->
+cd <Our-Path> 
+django-admin.py startproject <Our-Project-Name>
+
+<!--Open the file from our IDE 
+	Files:
+		- manage.py
+		Run commands
+		- shelter/__init__.py
+		Tells Python that the folder contains Python files
+		- shelter/wsgi.py
+		Provides a hook for web servers such as Apache or WebEngineX
+		- shelter/settings.py
+		Configures Django
+		- shelter/urls.py
+		Routes requests based on URL
+	Navigate to our project
+	Run the server using manage.py
+-->
+cd <Our-Project-Name>
+python3 manage.py runserver
+
+<!--Open the Django Website using localhost
+	Go to web browser and type: localhost:8000-->
+localhost:8000
+
+<!--Create our Django App
+	Django App:
+		- An app is a folder with Python files
+		- Within Django, an app is a component
+		- Each app fits a specific purpose
+	Pieces of an App:
+		File / Folder 
+			- apps.py
+			Configuration and initialization
+			- models.py
+			Data layer
+			- admin.py
+			Administrative interface
+			- urls.py
+			URL routing
+			- views.py
+			Control layer
+			- tests.py
+			Tests the app
+			- migrations/
+			Holds migration files
+	Whenever we add an app to our Django project
+	We have to go to the settings.py under "Our-Project-Name" folder
+	Go to <INSTALLED_APPS> and add our <Our-App-Name> to the list
+-->
+python3 manage.py startapp <Our-App-Name>
+
+<!--Django MVC architecture
+	- <Our-Project-Name>/urls.py
+	URL Patterns: Decides which fields to pass through
+	- <Our-App-Name>/views.py
+	Views: Provides control flow portion of the project
+	- <Our-App-Name>/templates/
+	Templates
+	- <Our-App-Name>/models.py
+	Models
+-->
+
+<!--Django Models
+	The models.py file contains the set of models for the Django app
+		A model is a class inheriting from django.db.models.Model and is used to define fields as class attributes
+		- Create the data layer of an app
+		- Define database structure
+		- Allow us to query the database
+	Code Example:
+		from django.db import models
+
+		class Item(models.Model):
+			title = models.CharField(max_length = 200)
+			description = models.TextField()
+			amount = models.IntegerField()
+	Field Types:
+		Numeric Data:
+			IntegerField: -1, 0, 1, 20
+			DecimalField: 0.5, 3.14
+		Textual Data:
+			CharField: "Product Name"
+			TextField: "To elaborate on my point..."
+			EmailField: example@email.com
+			URLField: www.example.com
+		Miscellaneous Data:
+			BooleanField: True, False
+			DateTimeField: datetime(1960, 1, 1, 8, 0, 0)
+		Relational Data:
+			ForeignKey: 1 (id of another table)
+			ManyToMany: NA
+	Field Attribute Options:
+		- max_length: 
+		Maximum length of char field
+		- null: 
+		Field can be null if True	
+		- blank: 
+		Field can indicate the field is not required if True
+		- choices: 
+		Field can limit the values that can be stored in the field to a set of choices that are provided
+-->
+
+<!--Migrations
+	Generate scripts to change the database structure
+
+	Initial Migration:
+		When a new model is defined, the initial migration will create the corresponding database tables. 
+	
+	- makemigrations:
+		- Generates migration files for later use
+		- Uses current model fields and current database tables
+		- Creates numbered files in <Our-App-Name>/migrations/
+	- migrate:
+		- Runs all migrations that haven't been run yet
+		- Can also run migrations for an app to a specific number using:
+			migrate <appname> <number>
+				E.g. migrate adoptions 1
+	Create migration for the pet and vaccine models. Because we do not yet have a table for these models, we call this migration an initial migration
+	Show migration for which has been run
+	Apply the migration
+-->
+python3 manage.py makemigrations
+python3 manage.py showmigrations
+python3 manage.py migrate
+
+<!--Open sqlitebrowser (install if haven't)
+		sudo add-apt-repository -y ppa:linuxgndu/sqlitebrowser-testing
+		sudo apt-get update
+		sudo apt-get install sqlitebrowser
+	Open db.sqlite3 file inside <Our-Project-Name>
+	Move the data.csv into our project so that it is sibling to manage.py
+	Move the management folder that contains the load_pet_data.py into the adoptions folder
+-->
+python3 manage.py load_pet_data
+
+<!--Create admin interface
+	Create an administative interface for our project, so that admin users can see and edit that data, using admin.py
+	In terminal, navigate to project folder, create a superuser for ourselves to log in as
+	After creating the user, go to "localhost:8000/admin"
+	user: pymachine
+	pass: 123
+-->
+python3 manage.py createsuperuser
+
+<!--Fixing the display on the localhost:8000/admin -> pet
+	By: 
+		- Changing content under Vaccine class of models.py:
+			def __str__(self):
+				return self.name
+		- Changing content under PetAdmin class of admin.py:
+			list_display = ['name', 'species', 'breed', 'age', 'sex']
+	Open interactive shell
+	Ctrl + L to clear screen
+	Checking the pet data
+	Checking the relational data
+-->
+python3 manage.py shell
+from adoptions.models import Pet
+pets = Pet.objects.all()
+pet = pets[0]
+pet.name
+pet.description
+pet.sex
+pet.id
+pet = Pet.objects.get(id=1)
+pet.name
+pet.vaccinations.all()
+pet = Pet.objects.get(id=7)
+pet.vaccinations.all()
+
+<!--URL Patterns
+	Regular Expressions examples:
+		- ducky: "rubber ducky"
+		- \d: 1
+		Digit Character 
+		- \d+: 12
+		One or more digit characters
+		- ^admin/: admin/inventory/item/
+		The charat (^) character means beginning of sequence
+		It will match anystring that begins with admin/ but will not match the word admin anywhere else in the string
+		- suffix$: anything-suffix
+		The dollar ($) sign means the end of sequence
+		It will match any string that ends with the word suffix
+		- ^$: 
+	Test out RE at Pythex.org
+	URL Patterns examples:
+		from django.confs.urls import url
+		from adoptions import views
+		urlpatterns = [
+			url(r'^$', views.home, name='index'),
+			url(r'^adoptions/?(\d+)/', views.pet_detail, name='pet_detail'),
+		]
+	Fix the urls.py
+		- 	from django.conf.urls import url
+			from django.contrib import admin
+			from django.urls import path
+
+			from adoptions import views 
+
+			urlpatterns = [
+			    url(r'^admin/', admin.site.urls),
+			    url(r'^$', views.home, name='home'),
+			    url(r'^adoptions/(\d+)/', views.pet_detail, name='pet_detail'),
+			]
+	Fix the views.py
+		- 	from django.shortcuts import render
+			from django.http import HttpResponse
+			from django.http import Http404
+
+			# Create views
+			from .models import Pet
+
+			def home(request):
+				# return HttpResponse('<p>home view</p>')
+				pets = Pet.objects.all()
+				return render(request, 'home.html', {'pets': pets})
+
+
+			def pet_detail(request, id):
+				# return HttpResponse(f'<p>pet_detail view with the id {id}</p>')
+				try:
+					pet = Pet.objects.get(id=id)
+				except Pet.DoesNotExists:
+					raise Http404('Pet not found')
+				return render(request, 'pet_detail.html', {'pet': pet}) 
+-->
+python3 manage.py runserver
+
+<!--Templates
+	Syntax:
+		- {{ variable }}
+		A variables value is shown when the variable name is used inside of double curly braces
+		
+		Example:
+			<h3>{{pet.name}}</h3>
+		
+		- {% tag %}
+		A template tag is enclosed in curly braces with percent signs and are used for for loops, ifs, structural elements, as well as some control logic
+		
+		Example:
+			{% for pet in pets %}
+				<li>{{pet.name}}</li>
+			{% endfor %}
+
+			urlpatterns = [
+				url(r'^$', views.home, name='index'),
+				url(r'^adoptions/(\d+)/$', views.pet_detail, name='pet_detail'),
+			]
+			{% url 'index' %}
+			{% url 'pet_detail' pet.id %}
+
+		- {{ variable|filter }}
+		A variable can have a pipe character after it to use a template filter. Template filters take a string as input and return a string as output and can be thought of much like the pipe in shell scripting
+
+		Example:
+			<h3>{{ pet.name|capfirst }}</h3>
+
+	Combined:
+		<ul>
+			{% for pet in pets %}
+			<li>
+				<a href="{% url pet_detail' pet.id %}">
+					{{ pet.name|capfirst}}
+				</a>
+			</li>
+			{% endfor %}
+		</ul>
+	
+</-->
+
+
